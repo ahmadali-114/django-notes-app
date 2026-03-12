@@ -1,29 +1,46 @@
-@Library('Shared')_
-pipeline{
-    agent { label 'dev-server'}
-    
-    stages{
-        stage("Code clone"){
-            steps{
-                sh "whoami"
-            clone("https://github.com/LondheShubham153/django-notes-app.git","main")
+@Library("Shared") _
+
+pipeline {
+    agent any
+
+    stages {
+
+        stage("Code") {
+            steps {
+                script{
+                    clone("https://github.com/ahmadali-114/django-notes-app.git","main")
+                }
             }
         }
-        stage("Code Build"){
-            steps{
-            dockerbuild("notes-app","latest")
+
+        stage("Build") {
+            steps {
+                script{
+                    dockerbuild("notes-app","latest","ahmadalimalik")
+                }
             }
         }
-        stage("Push to DockerHub"){
-            steps{
-                dockerpush("dockerHubCreds","notes-app","latest")
+
+        stage("Push") {
+            steps {
+                script{
+                    dockerpush("notes-app","latest","ahmadalimalik")
+                }
             }
         }
-        stage("Deploy"){
-            steps{
-                deploy()
+
+        stage("Deploy") {
+            steps {
+                script{
+                    try {
+                        sh "docker-compose up -d"
+                    }
+                    catch(err) {
+                        echo "Deploy error ignored for practice: ${err}"
+                    }
+                }
             }
         }
-        
+
     }
 }
